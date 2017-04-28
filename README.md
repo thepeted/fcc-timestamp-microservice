@@ -10,4 +10,4 @@
 `https://thepeted-timestamp.com/1475357676`
 
 ## Example Response
-`{"natural":"October 1, 2016","unix":1475276400}`
+`{2016","unix":1475276400, "natural":"October 1}`

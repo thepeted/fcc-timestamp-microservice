@@ -1,6 +1,11 @@
 'use strict'
+const fs = require('fs')
 const http = require('http')
-const index = require('fs').readFileSync('./public/index.html')
+const showdown = require('showdown')
+const converter = new showdown.Converter()
+
+const md = fs.readFileSync('./README.md', 'utf-8')
+const html = converter.makeHtml(md)
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -17,7 +22,7 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET') {
     if (req.url === '/') {
       res.writeHead(200, { 'Content-Type': 'text/html' })
-      res.end(index)
+      res.end(html)
       return
     }
     
