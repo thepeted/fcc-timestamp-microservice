@@ -1,32 +1,44 @@
-var express = require('express');
-var app = express();
-var moment = require('moment');
+'use strict'
+const http = require('http')
+const index = require('fs').readFileSync('./public/index.html')
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/public/index.html');
-});
+const monthNames = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
 
-app.get('/:param', function(req, res) {
-
-  var input = req.params.param;
-  var natural = null;
-  var unix = null;
-
-  // if string contains only digits > coerce and convert to ms
-  !isNaN(input) && (input*= 1000);
-
-  // momentjs will warn if we just pass a string, so we'll pass it a date obj
-  input = new Date(input);
-
-  if (moment(input).isValid()) {
-    natural = moment(input).format('MMMM D, YYYY');
-    unix = moment(input).unix();
+const server = http.createServer((req, res) => {
+  if (req.url === '/favicon.ico') {
+    res.writeHead(200, {'Content-Type': 'image/x-icon'})
+    res.end()
+    return
   }
 
-  res.json({ natural: natural, unix: unix });
-});
+  if (req.method === 'GET') {
+    if (req.url === '/') {
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      res.end(index)
+      return
+    }
+    
+    const result = { unix: null, natural: null } 
+    let input = decodeURI(req.url).substr(1)
+    
+    // if string contains only digits then coerce and convert to millisecs
+    !isNaN(input) && (input*= 1000);
 
-var port = process.env.PORT || 3000;
-app.listen(port, function () {
-  console.log('Listening on: ' + port);
-});
+    const date = new Date(input)
+    if (date.toString() !== 'Invalid Date') {
+      result.unix = date.getTime() / 1000
+      result.natural = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.write(JSON.stringify(result))
+  }
+  res.end()
+})
+
+const port = process.env.PORT || 3000;
+console.log('server listening on port ' + port)
+server.listen(port)
